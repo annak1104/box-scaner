@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, SlidersHorizontal } from "lucide-react";
+import { useI18n } from "@/components/i18n-provider";
 import type { ParcelStatusFilter, ParcelSortOrder } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -31,11 +32,13 @@ export function ParcelFilters({
   onSortChange,
   onStatusChange,
 }: ParcelFiltersProps) {
+  const { t } = useI18n();
+
   return (
     <section className="panel space-y-4 px-4 py-4">
       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
         <SlidersHorizontal className="h-4 w-4" />
-        Filters
+        {t("filters.title")}
       </div>
 
       <div className="space-y-3">
@@ -44,7 +47,7 @@ export function ParcelFilters({
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search by TTN"
+            placeholder={t("filters.searchPlaceholder")}
             className="h-12 pl-10"
           />
         </div>
@@ -57,15 +60,15 @@ export function ParcelFilters({
             }
           >
             <SelectTrigger className="h-12">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={t("filters.statusPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="returned">Returned</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="absent">Absent</SelectItem>
+              <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
+              <SelectItem value="new">{t("status.new")}</SelectItem>
+              <SelectItem value="delivered">{t("status.delivered")}</SelectItem>
+              <SelectItem value="returned">{t("status.returned")}</SelectItem>
+              <SelectItem value="rejected">{t("status.rejected")}</SelectItem>
+              <SelectItem value="absent">{t("status.absent")}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -74,17 +77,17 @@ export function ParcelFilters({
             onValueChange={(value) => onSortChange(value as ParcelSortOrder)}
           >
             <SelectTrigger className="h-12">
-              <SelectValue placeholder="Sort by date" />
+              <SelectValue placeholder={t("filters.sortPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Newest first</SelectItem>
-              <SelectItem value="oldest">Oldest first</SelectItem>
+              <SelectItem value="newest">{t("filters.newestFirst")}</SelectItem>
+              <SelectItem value="oldest">{t("filters.oldestFirst")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <Button type="button" variant="outline" className="h-11 w-full" onClick={onReset}>
-          Reset filters
+          {t("filters.reset")}
         </Button>
       </div>
     </section>

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, ScanLine } from "lucide-react";
 import { BranchGuard } from "@/components/branch-guard";
+import { useI18n } from "@/components/i18n-provider";
+import { ScannerLoadingState } from "@/components/scanner-loading-state";
 import { StatusUpdateDialog } from "@/components/status-update-dialog";
 import { Button } from "@/components/ui/button";
 import { playScanTone, vibrateDevice } from "@/lib/client-feedback";
@@ -14,11 +16,7 @@ import type { Parcel } from "@/lib/types";
 
 const ScannerClient = dynamic(() => import("@/components/scanner-client"), {
   ssr: false,
-  loading: () => (
-    <div className="panel flex min-h-80 items-center justify-center p-6 text-sm text-muted-foreground">
-      Loading camera scanner...
-    </div>
-  ),
+  loading: () => <ScannerLoadingState />,
 });
 
 type CreateParcelResponse = {
@@ -28,6 +26,7 @@ type CreateParcelResponse = {
 
 export default function ScanPage() {
   const router = useRouter();
+  const { locale, t } = useI18n();
   const branchNumber = useBranchStore((state) => state.branchNumber);
   const [scannerKey, setScannerKey] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -44,13 +43,14 @@ export default function ScanPage() {
   const handleDetected = async (ttn: string) => {
     setIsProcessing(true);
     setErrorMessage(null);
-    setStatusMessage(`Barcode detected: ${ttn}`);
+    setStatusMessage(t("scan.barcodeDetected", { ttn }));
 
     try {
       const response = await fetch("/api/parcels", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-locale": locale,
         },
         body: JSON.stringify({ ttn, branchNumber }),
       });
@@ -60,7 +60,9 @@ export default function ScanPage() {
       if (response.status === 201 && payload.parcel) {
         vibrateDevice([120, 40, 120]);
         playScanTone();
-        setStatusMessage(`Parcel ${payload.parcel.ttn} saved successfully.`);
+        setStatusMessage(
+          t("scan.parcelSaved", { ttn: payload.parcel.ttn }),
+        );
         window.setTimeout(() => {
           router.replace("/parcels");
         }, 900);
@@ -71,15 +73,15 @@ export default function ScanPage() {
         vibrateDevice([80, 30, 80]);
         setExistingParcel(payload.parcel);
         setStatusMessage(
-          `Parcel ${payload.parcel.ttn} already exists. Choose a new status.`,
+          t("scan.parcelExists", { ttn: payload.parcel.ttn }),
         );
         return;
       }
 
-      throw new Error(payload.message ?? "Unable to process scanned parcel.");
+      throw new Error(payload.message ?? t("api.unableSaveParcel"));
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Unexpected network error.",
+        error instanceof Error ? error.message : t("network.unexpected"),
       );
       setScannerKey((current) => current + 1);
     } finally {
@@ -94,25 +96,24 @@ export default function ScanPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {t("scan.back")}
             </Link>
           </Button>
           <p className="text-sm font-medium text-muted-foreground">
-            Branch #{branchNumber}
+            {t("branch.number", { branchNumber })}
           </p>
         </div>
 
         <section className="space-y-3">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary/75">
-              Scan flow
+              {t("scan.flow")}
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Scan parcel barcode
+              {t("scan.title")}
             </h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Use the back camera, keep the barcode inside the guide, and let
-              the scanner create or update the parcel automatically.
+              {t("scan.description")}
             </p>
           </div>
         </section>
@@ -142,7 +143,7 @@ export default function ScanPage() {
               <p className="text-sm leading-6 text-destructive">{errorMessage}</p>
               <Button variant="outline" onClick={resetScanner}>
                 <ScanLine className="mr-2 h-4 w-4" />
-                Try again
+                {t("scan.retry")}
               </Button>
             </div>
           </div>

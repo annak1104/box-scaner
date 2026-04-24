@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useDeferredValue, useEffect, useState } from "react";
+import { translate, type Locale } from "@/lib/i18n/messages";
 import type { Parcel, ParcelStatusFilter, ParcelSortOrder } from "@/lib/types";
 
 type UseParcelsParams = {
   branchNumber: string;
+  locale: Locale;
   page: number;
   pageSize: number;
   search: string;
@@ -28,6 +30,7 @@ const initialData: ParcelResponse = {
 
 export function useParcels({
   branchNumber,
+  locale,
   page,
   pageSize,
   search,
@@ -65,6 +68,9 @@ export function useParcels({
 
       const response = await fetch(`/api/parcels?${query.toString()}`, {
         cache: "no-store",
+        headers: {
+          "x-locale": locale,
+        },
       });
 
       const payload = (await response.json()) as ParcelResponse & {
@@ -72,18 +78,20 @@ export function useParcels({
       };
 
       if (!response.ok) {
-        throw new Error(payload.message || "Unable to load parcels.");
+        throw new Error(payload.message || translate(locale, "api.unableLoadParcels"));
       }
 
       setData(payload);
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Unexpected network error.",
+        error instanceof Error
+          ? error.message
+          : translate(locale, "network.unexpected"),
       );
     } finally {
       setIsLoading(false);
     }
-  }, [branchNumber, deferredSearch, page, pageSize, sort, status]);
+  }, [branchNumber, deferredSearch, locale, page, pageSize, sort, status]);
 
   useEffect(() => {
     void fetchParcels();

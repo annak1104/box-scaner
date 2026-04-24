@@ -56,7 +56,7 @@ export async function createOrFetchParcel(input: CreateParcelInput) {
   const existingParcel = await findParcelByTtn(input.ttn);
 
   if (!existingParcel) {
-    throw new Error("Parcel could not be loaded after duplicate scan.");
+    throw new Error("api.unableSaveParcel");
   }
 
   return {

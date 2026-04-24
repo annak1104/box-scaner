@@ -3,10 +3,12 @@
 import { ArrowRight, Camera, MapPin, Package2, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { BranchGuard } from "@/components/branch-guard";
+import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { useBranchStore } from "@/lib/stores/branch-store";
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   const branchNumber = useBranchStore((state) => state.branchNumber);
   const clearBranchNumber = useBranchStore((state) => state.clearBranchNumber);
 
@@ -17,14 +19,14 @@ export default function DashboardPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary/75">
-                Active branch
+                {t("dashboard.activeBranch")}
               </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-                Dashboard
+                {t("dashboard.title")}
               </h1>
               <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-base font-semibold shadow-sm">
                 <MapPin className="h-4 w-4 text-primary" />
-                Branch #{branchNumber}
+                {t("branch.number", { branchNumber })}
               </div>
             </div>
 
@@ -37,7 +39,7 @@ export default function DashboardPage() {
             >
               <Link href="/">
                 <RotateCcw className="h-5 w-5" />
-                <span className="sr-only">Change branch</span>
+                <span className="sr-only">{t("branch.change")}</span>
               </Link>
             </Button>
           </div>
@@ -52,12 +54,13 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/75">
-                    Quick action
+                    {t("dashboard.quickAction")}
                   </p>
-                  <h2 className="mt-1 text-2xl font-semibold">Scan Parcel</h2>
+                  <h2 className="mt-1 text-2xl font-semibold">
+                    {t("dashboard.scanParcel")}
+                  </h2>
                   <p className="mt-2 max-w-xs text-sm text-white/80">
-                    Open the camera, detect the barcode, and register or update
-                    parcel status in seconds.
+                    {t("dashboard.scanDescription")}
                   </p>
                 </div>
               </div>
@@ -73,12 +76,13 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-700">
-                    Branch records
+                    {t("dashboard.records")}
                   </p>
-                  <h2 className="mt-1 text-2xl font-semibold">View Parcels</h2>
+                  <h2 className="mt-1 text-2xl font-semibold">
+                    {t("dashboard.viewParcels")}
+                  </h2>
                   <p className="mt-2 max-w-xs text-sm text-slate-700">
-                    Search by TTN, filter by status, sort by date, and update
-                    parcel results from one list.
+                    {t("dashboard.viewDescription")}
                   </p>
                 </div>
               </div>

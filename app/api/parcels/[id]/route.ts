@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { tRequest } from "@/lib/i18n/server";
 import { updateParcelStatus } from "@/lib/repositories/parcels";
 import { parcelIdSchema, updateParcelStatusSchema } from "@/lib/validators";
 
-function getServerErrorMessage(error: unknown, fallback: string) {
-  if (
-    error instanceof Error &&
-    (error.message.includes("DATABASE_URL") ||
-      error.message.toLowerCase().includes("connection"))
-  ) {
-    return error.message;
+function getServerErrorMessage(
+  request: Request,
+  error: unknown,
+  fallbackKey: string,
+) {
+  if (error instanceof Error) {
+    if (error.message.startsWith("api.")) {
+      return tRequest(request, error.message);
+    }
+
+    if (error.message.toLowerCase().includes("connection")) {
+      return tRequest(request, "api.database.invalid");
+    }
   }
 
-  return fallback;
+  return tRequest(request, fallbackKey);
 }
 
 export async function PATCH(
@@ -28,7 +35,7 @@ export async function PATCH(
 
     if (!parcel) {
       return NextResponse.json(
-        { message: "Parcel not found." },
+        { message: tRequest(request, "api.parcelNotFound") },
         { status: 404 },
       );
     }
@@ -38,7 +45,10 @@ export async function PATCH(
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
-          message: error.issues[0]?.message ?? "Invalid request.",
+          message: tRequest(
+            request,
+            error.issues[0]?.message ?? "api.invalidRequest",
+          ),
         },
         { status: 400 },
       );
@@ -47,8 +57,9 @@ export async function PATCH(
     return NextResponse.json(
       {
         message: getServerErrorMessage(
+          request,
           error,
-          "Unable to update parcel status.",
+          "api.unableUpdateParcel",
         ),
       },
       { status: 500 },

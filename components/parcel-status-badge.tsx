@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/components/i18n-provider";
 import { cn } from "@/lib/utils";
 import type { ParcelStatus } from "@/lib/types";
 
@@ -9,15 +12,9 @@ const badgeClasses: Record<ParcelStatus, string> = {
   returned: "bg-amber-100 text-amber-700",
 };
 
-const statusLabels: Record<ParcelStatus, string> = {
-  absent: "Absent",
-  delivered: "Delivered",
-  new: "New",
-  rejected: "Rejected",
-  returned: "Returned",
-};
-
 export function ParcelStatusBadge({ status }: { status: ParcelStatus }) {
+  const { t } = useI18n();
+
   return (
     <span
       className={cn(
@@ -25,7 +22,7 @@ export function ParcelStatusBadge({ status }: { status: ParcelStatus }) {
         badgeClasses[status],
       )}
     >
-      {statusLabels[status]}
+      {t(`status.${status}`)}
     </span>
   );
 }

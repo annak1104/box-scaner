@@ -1,21 +1,28 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { tRequest } from "@/lib/i18n/server";
 import {
   createOrFetchParcel,
   listParcels,
 } from "@/lib/repositories/parcels";
 import { createParcelSchema, parcelQuerySchema } from "@/lib/validators";
 
-function getServerErrorMessage(error: unknown, fallback: string) {
-  if (
-    error instanceof Error &&
-    (error.message.includes("DATABASE_URL") ||
-      error.message.toLowerCase().includes("connection"))
-  ) {
-    return error.message;
+function getServerErrorMessage(
+  request: Request,
+  error: unknown,
+  fallbackKey: string,
+) {
+  if (error instanceof Error) {
+    if (error.message.startsWith("api.")) {
+      return tRequest(request, error.message);
+    }
+
+    if (error.message.toLowerCase().includes("connection")) {
+      return tRequest(request, "api.database.invalid");
+    }
   }
 
-  return fallback;
+  return tRequest(request, fallbackKey);
 }
 
 export async function GET(request: Request) {
@@ -30,14 +37,17 @@ export async function GET(request: Request) {
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
-          message: error.issues[0]?.message ?? "Invalid query parameters.",
+          message: tRequest(
+            request,
+            error.issues[0]?.message ?? "api.invalidQuery",
+          ),
         },
         { status: 400 },
       );
     }
 
     return NextResponse.json(
-      { message: getServerErrorMessage(error, "Unable to load parcels.") },
+      { message: getServerErrorMessage(request, error, "api.unableLoadParcels") },
       { status: 500 },
     );
   }
@@ -51,8 +61,8 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         message: result.created
-          ? "Parcel created."
-          : "Duplicate TTN detected.",
+          ? tRequest(request, "api.parcelCreated")
+          : tRequest(request, "api.duplicateTTN"),
         parcel: result.parcel,
       },
       { status: result.created ? 201 : 409 },
@@ -61,14 +71,17 @@ export async function POST(request: Request) {
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
-          message: error.issues[0]?.message ?? "Invalid payload.",
+          message: tRequest(
+            request,
+            error.issues[0]?.message ?? "api.invalidPayload",
+          ),
         },
         { status: 400 },
       );
     }
 
     return NextResponse.json(
-      { message: getServerErrorMessage(error, "Unable to save parcel.") },
+      { message: getServerErrorMessage(request, error, "api.unableSaveParcel") },
       { status: 500 },
     );
   }

@@ -7,9 +7,9 @@ export const branchSelectionSchema = z.object({
   branchNumber: z
     .string()
     .trim()
-    .min(1, "Branch number is required.")
-    .regex(/^\d+$/, "Branch number must contain digits only.")
-    .max(32, "Branch number is too long."),
+    .min(1, "validation.branch.required")
+    .regex(/^\d+$/, "validation.branch.digits")
+    .max(32, "validation.branch.max"),
 });
 
 export const createParcelSchema = z.object({
@@ -17,8 +17,8 @@ export const createParcelSchema = z.object({
   ttn: z
     .string()
     .trim()
-    .min(4, "TTN is too short.")
-    .max(128, "TTN is too long.")
+    .min(4, "validation.ttn.short")
+    .max(128, "validation.ttn.long")
     .transform((value) => value.toUpperCase()),
 });
 
@@ -37,5 +37,5 @@ export const parcelQuerySchema = z.object({
 
 export const parcelIdSchema = z.coerce
   .number()
-  .int("Parcel id must be a whole number.")
-  .positive("Parcel id must be positive.");
+  .int("validation.parcelId.integer")
+  .positive("validation.parcelId.positive");

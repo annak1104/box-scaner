@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/components/i18n-provider";
 import type { Parcel, ParcelStatus } from "@/lib/types";
 import { Button } from "./ui/button";
 import {
@@ -26,20 +27,13 @@ type StatusUpdateDialogProps = {
   onUpdated: (parcel: Parcel) => void;
 };
 
-const options: { label: string; value: ParcelStatus }[] = [
-  { label: "Delivered", value: "delivered" },
-  { label: "Returned", value: "returned" },
-  { label: "Rejected", value: "rejected" },
-  { label: "Absent", value: "absent" },
-  { label: "New", value: "new" },
-];
-
 export function StatusUpdateDialog({
   open,
   parcel,
   onOpenChange,
   onUpdated,
 }: StatusUpdateDialogProps) {
+  const { locale, t } = useI18n();
   const [status, setStatus] = useState<ParcelStatus>("new");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +58,7 @@ export function StatusUpdateDialog({
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          "x-locale": locale,
         },
         body: JSON.stringify({ status }),
       });
@@ -74,13 +69,13 @@ export function StatusUpdateDialog({
       };
 
       if (!response.ok || !payload.parcel) {
-        throw new Error(payload.message || "Unable to update parcel.");
+        throw new Error(payload.message || t("api.unableUpdateParcel"));
       }
 
       onUpdated(payload.parcel);
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Unexpected network error.",
+        error instanceof Error ? error.message : t("network.unexpected"),
       );
     } finally {
       setIsSaving(false);
@@ -91,25 +86,25 @@ export function StatusUpdateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Update parcel status</DialogTitle>
+          <DialogTitle>{t("statusDialog.title")}</DialogTitle>
           <DialogDescription>
             {parcel
-              ? `Parcel ${parcel.ttn} was already scanned. Choose the latest delivery result.`
-              : "Choose the latest status for this parcel."}
+              ? t("statusDialog.descriptionExisting", { ttn: parcel.ttn })
+              : t("statusDialog.descriptionGeneric")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <p className="text-sm font-medium">Status</p>
+            <p className="text-sm font-medium">{t("statusDialog.status")}</p>
             <Select value={status} onValueChange={(value) => setStatus(value as ParcelStatus)}>
               <SelectTrigger className="h-12">
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder={t("statusDialog.select")} />
               </SelectTrigger>
               <SelectContent>
-                {options.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {(["delivered", "returned", "rejected", "absent", "new"] as ParcelStatus[]).map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {t(`status.${option}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -122,10 +117,10 @@ export function StatusUpdateDialog({
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {t("statusDialog.saving")}
               </>
             ) : (
-              "Save status"
+              t("statusDialog.save")
             )}
           </Button>
         </div>

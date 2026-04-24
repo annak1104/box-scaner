@@ -3,6 +3,7 @@
 import type { Html5Qrcode as Html5QrcodeType } from "html5-qrcode";
 import { useEffect, useId, useRef, useState } from "react";
 import { Camera, CameraOff, Loader2 } from "lucide-react";
+import { useI18n } from "@/components/i18n-provider";
 
 type ScannerClientProps = {
   isLocked?: boolean;
@@ -15,6 +16,7 @@ export default function ScannerClient({
   onDetected,
   onScannerError,
 }: ScannerClientProps) {
+  const { t } = useI18n();
   const regionId = useId().replace(/:/g, "");
   const scannerRef = useRef<Html5QrcodeType | null>(null);
   const scannedRef = useRef(false);
@@ -119,7 +121,7 @@ export default function ScannerClient({
             const cameras = await Html5Qrcode.getCameras();
 
             if (!cameras.length) {
-              throw new Error("No camera available on this device.");
+              throw new Error(t("scanner.noCamera"));
             }
 
             await scanner.start(cameras[0].id, config, onScanSuccess, undefined);
@@ -134,19 +136,17 @@ export default function ScannerClient({
         setIsReady(true);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Unable to start scanner.";
+          error instanceof Error ? error.message : t("scanner.unableToStart");
         const lowerCased = message.toLowerCase();
 
         if (lowerCased.includes("permission") || lowerCased.includes("denied")) {
           onScannerErrorRef.current(
-            "Camera permission denied. Please allow camera access and try again.",
+            t("scanner.permissionDenied"),
           );
-        } else if (lowerCased.includes("camera")) {
-          onScannerErrorRef.current(message);
+        } else if (lowerCased.includes("no camera")) {
+          onScannerErrorRef.current(t("scanner.noCamera"));
         } else {
-          onScannerErrorRef.current(
-            "Unable to start barcode scanner on this device.",
-          );
+          onScannerErrorRef.current(t("scanner.unableToStart"));
         }
       } finally {
         if (!cancelled) {
@@ -171,16 +171,16 @@ export default function ScannerClient({
             {isReady ? <Camera className="h-5 w-5" /> : <CameraOff className="h-5 w-5" />}
           </div>
           <div>
-            <p className="text-sm font-semibold">Live scanner</p>
+            <p className="text-sm font-semibold">{t("scanner.live")}</p>
             <p className="text-sm text-muted-foreground">
-              Align the barcode inside the frame
+              {t("scanner.align")}
             </p>
           </div>
         </div>
         {isStarting ? (
           <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Starting
+            {t("scanner.starting")}
           </div>
         ) : null}
       </div>
@@ -193,8 +193,7 @@ export default function ScannerClient({
       </div>
 
       <div className="px-4 py-4 text-sm text-muted-foreground">
-        Keep the barcode steady for a moment. If nothing is detected, move a bit
-        closer or improve lighting.
+        {t("scanner.guidance")}
       </div>
     </section>
   );

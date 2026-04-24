@@ -55,17 +55,13 @@ export function assertDatabaseConfigured() {
     databaseUrl === "your_neon_connection_string" ||
     databaseUrl.includes("ep-example")
   ) {
-    throw new Error(
-      "DATABASE_URL is not configured. Add your Neon connection string to .env.local.",
-    );
+    throw new Error("api.database.missing");
   }
 
   try {
     new URL(databaseUrl);
   } catch {
-    throw new Error(
-      "DATABASE_URL is invalid. Add a valid Neon connection string to .env.local.",
-    );
+    throw new Error("api.database.invalid");
   }
 }
 

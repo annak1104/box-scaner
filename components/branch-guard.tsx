@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useI18n } from "@/components/i18n-provider";
 import { useBranchStore } from "@/lib/stores/branch-store";
 
 export function BranchGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { t } = useI18n();
   const branchNumber = useBranchStore((state) => state.branchNumber);
   const hasHydrated = useBranchStore((state) => state.hasHydrated);
 
@@ -19,7 +21,7 @@ export function BranchGuard({ children }: { children: React.ReactNode }) {
     return (
       <main className="app-shell justify-center">
         <div className="panel px-5 py-10 text-center text-sm text-muted-foreground">
-          Loading branch workspace...
+          {t("branch.loadingWorkspace")}
         </div>
       </main>
     );

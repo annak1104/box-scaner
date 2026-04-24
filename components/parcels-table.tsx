@@ -1,5 +1,7 @@
-import { format } from "date-fns";
+"use client";
+
 import { AlertCircle } from "lucide-react";
+import { useI18n } from "@/components/i18n-provider";
 import type { Parcel } from "@/lib/types";
 import { Button } from "./ui/button";
 import {
@@ -25,6 +27,8 @@ export function ParcelsTable({
   parcels,
   onUpdateStatus,
 }: ParcelsTableProps) {
+  const { locale, t } = useI18n();
+
   return (
     <section className="panel overflow-hidden">
       {error ? (
@@ -37,17 +41,17 @@ export function ParcelsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>TTN</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead className="text-right">Action</TableHead>
+            <TableHead>{t("table.ttn")}</TableHead>
+            <TableHead>{t("table.status")}</TableHead>
+            <TableHead>{t("table.date")}</TableHead>
+            <TableHead className="text-right">{t("table.action")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
               <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
-                Loading parcels...
+                {t("table.loading")}
               </TableCell>
             </TableRow>
           ) : null}
@@ -55,7 +59,7 @@ export function ParcelsTable({
           {!isLoading && parcels.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
-                No parcels found for this filter set.
+                {t("table.empty")}
               </TableCell>
             </TableRow>
           ) : null}
@@ -68,7 +72,13 @@ export function ParcelsTable({
                     <ParcelStatusBadge status={parcel.status} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {format(new Date(parcel.createdAt), "dd.MM.yyyy HH:mm")}
+                    {new Intl.DateTimeFormat(locale === "uk" ? "uk-UA" : "en-US", {
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    }).format(new Date(parcel.createdAt))}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
@@ -76,7 +86,7 @@ export function ParcelsTable({
                       variant="outline"
                       onClick={() => onUpdateStatus(parcel)}
                     >
-                      Update status
+                      {t("table.updateStatus")}
                     </Button>
                   </TableCell>
                 </TableRow>

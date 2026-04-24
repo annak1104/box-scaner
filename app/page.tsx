@@ -4,11 +4,13 @@ import { Building2, ChevronRight, PackageSearch } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { BranchForm } from "@/components/branch-form";
+import { useI18n } from "@/components/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { useBranchStore } from "@/lib/stores/branch-store";
 
 export default function HomePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const branchNumber = useBranchStore((state) => state.branchNumber);
   const hasHydrated = useBranchStore((state) => state.hasHydrated);
 
@@ -28,14 +30,13 @@ export default function HomePage() {
 
           <div className="space-y-3">
             <p className="text-sm font-medium uppercase tracking-[0.25em] text-primary/75">
-              Parcel Flow
+              {t("app.name")}
             </p>
             <h1 className="text-3xl font-semibold tracking-tight">
-              Scan and manage branch parcels faster.
+              {t("home.title")}
             </h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              Enter the branch number to unlock scanning, parcel history, and
-              status updates designed for field teams on mobile devices.
+              {t("home.description")}
             </p>
           </div>
 
@@ -51,9 +52,9 @@ export default function HomePage() {
             <Building2 className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold">Returning worker?</p>
+            <p className="text-sm font-semibold">{t("home.returningWorker")}</p>
             <p className="text-sm text-muted-foreground">
-              Your branch stays saved on this device.
+              {t("home.returningWorkerDescription")}
             </p>
           </div>
         </div>
@@ -64,7 +65,7 @@ export default function HomePage() {
           onClick={() => router.push("/dashboard")}
           disabled={!hasHydrated || !branchNumber}
         >
-          Open dashboard
+          {t("home.openDashboard")}
           <ChevronRight className="h-5 w-5" />
         </Button>
       </section>
