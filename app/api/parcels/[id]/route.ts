@@ -3,6 +3,18 @@ import { ZodError } from "zod";
 import { updateParcelStatus } from "@/lib/repositories/parcels";
 import { parcelIdSchema, updateParcelStatusSchema } from "@/lib/validators";
 
+function getServerErrorMessage(error: unknown, fallback: string) {
+  if (
+    error instanceof Error &&
+    (error.message.includes("DATABASE_URL") ||
+      error.message.toLowerCase().includes("connection"))
+  ) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -33,7 +45,12 @@ export async function PATCH(
     }
 
     return NextResponse.json(
-      { message: "Unable to update parcel status." },
+      {
+        message: getServerErrorMessage(
+          error,
+          "Unable to update parcel status.",
+        ),
+      },
       { status: 500 },
     );
   }

@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
-import { getDb } from "@/lib/db";
+import { assertDatabaseConfigured, db } from "@/lib/db";
 import { parcels } from "@/lib/schema";
 import type {
   CreateParcelInput,
@@ -8,7 +8,7 @@ import type {
 } from "@/lib/types";
 
 export async function findParcelByTtn(ttn: string) {
-  const db = getDb();
+  assertDatabaseConfigured();
   const [parcel] = await db
     .select()
     .from(parcels)
@@ -19,7 +19,7 @@ export async function findParcelByTtn(ttn: string) {
 }
 
 export async function createParcel(input: CreateParcelInput) {
-  const db = getDb();
+  assertDatabaseConfigured();
   const [parcel] = await db
     .insert(parcels)
     .values({
@@ -32,8 +32,41 @@ export async function createParcel(input: CreateParcelInput) {
   return parcel;
 }
 
+export async function createOrFetchParcel(input: CreateParcelInput) {
+  assertDatabaseConfigured();
+  const inserted = await db
+    .insert(parcels)
+    .values({
+      branchNumber: input.branchNumber,
+      status: "new",
+      ttn: input.ttn,
+    })
+    .onConflictDoNothing({
+      target: parcels.ttn,
+    })
+    .returning();
+
+  if (inserted[0]) {
+    return {
+      created: true,
+      parcel: inserted[0],
+    };
+  }
+
+  const existingParcel = await findParcelByTtn(input.ttn);
+
+  if (!existingParcel) {
+    throw new Error("Parcel could not be loaded after duplicate scan.");
+  }
+
+  return {
+    created: false,
+    parcel: existingParcel,
+  };
+}
+
 export async function listParcels(input: ParcelQueryInput) {
-  const db = getDb();
+  assertDatabaseConfigured();
   const predicates = [eq(parcels.branchNumber, input.branch)];
 
   if (input.status && input.status !== "all") {
@@ -71,7 +104,7 @@ export async function listParcels(input: ParcelQueryInput) {
 }
 
 export async function updateParcelStatus(id: number, status: ParcelStatus) {
-  const db = getDb();
+  assertDatabaseConfigured();
   const [parcel] = await db
     .update(parcels)
     .set({ status })

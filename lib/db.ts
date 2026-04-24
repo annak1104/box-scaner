@@ -1,37 +1,46 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
-declare global {
-  var __parcelDb: ReturnType<typeof drizzle<typeof schema>> | undefined;
-  var __parcelSql: postgres.Sql | undefined;
-}
+const FALLBACK_DATABASE_URL =
+  "postgresql://placeholder:placeholder@127.0.0.1:5432/placeholder";
 
 function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
 
   if (!databaseUrl) {
-    throw new Error("DATABASE_URL is not configured.");
+    return FALLBACK_DATABASE_URL;
   }
 
-  return databaseUrl;
+  try {
+    new URL(databaseUrl);
+    return databaseUrl;
+  } catch {
+    return FALLBACK_DATABASE_URL;
+  }
 }
 
-export function getDb() {
-  if (globalThis.__parcelDb) {
-    return globalThis.__parcelDb;
+export function assertDatabaseConfigured() {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl || databaseUrl === "your_neon_connection_string") {
+    throw new Error(
+      "DATABASE_URL is not configured. Add your Neon connection string to .env.local.",
+    );
   }
 
-  const sql = postgres(getDatabaseUrl(), {
-    max: 1,
-    prepare: false,
-  });
-  const db = drizzle(sql, { schema });
-
-  if (process.env.NODE_ENV !== "production") {
-    globalThis.__parcelDb = db;
-    globalThis.__parcelSql = sql;
+  try {
+    new URL(databaseUrl);
+  } catch {
+    throw new Error(
+      "DATABASE_URL is invalid. Add a valid Neon connection string to .env.local.",
+    );
   }
-
-  return db;
 }
+
+const sql = neon(getDatabaseUrl());
+
+export const db = drizzle({
+  client: sql,
+  schema,
+});

@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import {
-  createParcel,
-  findParcelByTtn,
+  createOrFetchParcel,
   listParcels,
 } from "@/lib/repositories/parcels";
 import { createParcelSchema, parcelQuerySchema } from "@/lib/validators";
+
+function getServerErrorMessage(error: unknown, fallback: string) {
+  if (
+    error instanceof Error &&
+    (error.message.includes("DATABASE_URL") ||
+      error.message.toLowerCase().includes("connection"))
+  ) {
+    return error.message;
+  }
+
+  return fallback;
+}
 
 export async function GET(request: Request) {
   try {
@@ -26,7 +37,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(
-      { message: "Unable to load parcels." },
+      { message: getServerErrorMessage(error, "Unable to load parcels.") },
       { status: 500 },
     );
   }
@@ -35,25 +46,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const payload = createParcelSchema.parse(await request.json());
-    const existingParcel = await findParcelByTtn(payload.ttn);
-
-    if (existingParcel) {
-      return NextResponse.json(
-        {
-          message: "Duplicate TTN detected.",
-          parcel: existingParcel,
-        },
-        { status: 409 },
-      );
-    }
-
-    const parcel = await createParcel(payload);
+    const result = await createOrFetchParcel(payload);
 
     return NextResponse.json(
       {
-        parcel,
+        message: result.created
+          ? "Parcel created."
+          : "Duplicate TTN detected.",
+        parcel: result.parcel,
       },
-      { status: 201 },
+      { status: result.created ? 201 : 409 },
     );
   } catch (error) {
     if (error instanceof ZodError) {
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { message: "Unable to save parcel." },
+      { message: getServerErrorMessage(error, "Unable to save parcel.") },
       { status: 500 },
     );
   }
