@@ -1,0 +1,146 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { ArrowLeft, PackageOpen, RefreshCcw } from "lucide-react";
+import { BranchGuard } from "@/components/branch-guard";
+import { ParcelFilters } from "@/components/parcel-filters";
+import { ParcelsTable } from "@/components/parcels-table";
+import { StatusUpdateDialog } from "@/components/status-update-dialog";
+import { Button } from "@/components/ui/button";
+import { useParcels } from "@/hooks/use-parcels";
+import { useBranchStore } from "@/lib/stores/branch-store";
+import type { Parcel, ParcelStatusFilter, ParcelSortOrder } from "@/lib/types";
+
+const PAGE_SIZE = 12;
+
+export default function ParcelsPage() {
+  const branchNumber = useBranchStore((state) => state.branchNumber);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<ParcelStatusFilter>("all");
+  const [sort, setSort] = useState<ParcelSortOrder>("newest");
+  const [page, setPage] = useState(1);
+  const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
+
+  const query = useMemo(
+    () => ({
+      branchNumber,
+      page,
+      pageSize: PAGE_SIZE,
+      search,
+      sort,
+      status,
+    }),
+    [branchNumber, page, search, sort, status],
+  );
+
+  const { data, error, isLoading, refresh, replaceParcel } = useParcels(query);
+  const totalPages = Math.max(1, Math.ceil(data.total / PAGE_SIZE));
+
+  return (
+    <BranchGuard>
+      <main className="app-shell gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" onClick={refresh}>
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
+
+        <section className="panel px-5 py-5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-secondary p-3 text-secondary-foreground">
+              <PackageOpen className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary/75">
+                Branch #{branchNumber}
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                Parcel list
+              </h1>
+            </div>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Search by TTN, filter by parcel status, and update the record when a
+            parcel is delivered, returned, rejected, or absent.
+          </p>
+        </section>
+
+        <ParcelFilters
+          search={search}
+          status={status}
+          sort={sort}
+          onSearchChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+          onStatusChange={(value) => {
+            setStatus(value);
+            setPage(1);
+          }}
+          onSortChange={setSort}
+          onReset={() => {
+            setSearch("");
+            setStatus("all");
+            setSort("newest");
+            setPage(1);
+          }}
+        />
+
+        <ParcelsTable
+          error={error}
+          isLoading={isLoading}
+          parcels={data.items}
+          onUpdateStatus={setSelectedParcel}
+        />
+
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/80 bg-white/70 px-4 py-3 text-sm">
+          <p className="text-muted-foreground">
+            Page {data.page} of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() =>
+                setPage((current) => Math.min(totalPages, current + 1))
+              }
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+
+        <StatusUpdateDialog
+          open={Boolean(selectedParcel)}
+          parcel={selectedParcel}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedParcel(null);
+            }
+          }}
+          onUpdated={(updatedParcel) => {
+            replaceParcel(updatedParcel);
+            setSelectedParcel(null);
+          }}
+        />
+      </main>
+    </BranchGuard>
+  );
+}
