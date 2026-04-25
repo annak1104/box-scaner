@@ -220,12 +220,12 @@ const messages: Record<Locale, Record<string, string>> = {
     "scanner.starting": "Запуск",
     "scanner.unableToStart":
       "Не вдалося запустити сканер штрихкодів на цьому пристрої.",
-    "status.absent": "Відсутня",
-    "status.delivered": "Доставлено",
+    "status.absent": "Відсутній",
+    "status.delivered": "Вручено",
     "status.in_storage": "На зберіганні",
     "status.new": "Нова",
     "status.received": "Отримано",
-    "status.rejected": "Відхилено",
+    "status.rejected": "Відмова",
     "status.returned": "Повернено",
     "statusDialog.descriptionDuplicate":
       "Посилку {ttn} уже відскановано. Перевірте її поточний статус і оновіть за потреби.",

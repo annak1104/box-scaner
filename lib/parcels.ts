@@ -1,7 +1,6 @@
 import type { Parcel, ParcelStatus } from "./types";
 
 export const parcelStatusOptions: ParcelStatus[] = [
-  "received",
   "in_storage",
   "delivered",
   "returned",
