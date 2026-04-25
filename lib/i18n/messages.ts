@@ -27,6 +27,10 @@ const messages: Record<Locale, Record<string, string>> = {
     "dashboard.viewDescription":
       "Search by TTN, filter by status, sort by date, and update parcel results from one list.",
     "dashboard.viewParcels": "View Parcels",
+    "aging.bannerBody":
+      "This shipment has been in storage for more than 7 days. Please update its status or deliver it.",
+    "aging.bannerTitle": "Shipments needing attention: {count}",
+    "aging.highlight": "In storage for more than 7 days",
     "filters.allStatuses": "All statuses",
     "filters.newestFirst": "Newest first",
     "filters.oldestFirst": "Oldest first",
@@ -51,6 +55,12 @@ const messages: Record<Locale, Record<string, string>> = {
     "lang.english": "English",
     "lang.switcherLabel": "Language",
     "lang.ukrainian": "Українська",
+    "manualEntry.description":
+      "If the scanner cannot read the barcode, enter the TTN manually and process it the same way.",
+    "manualEntry.placeholder": "Enter TTN manually",
+    "manualEntry.processing": "Processing TTN...",
+    "manualEntry.submit": "Submit TTN",
+    "manualEntry.title": "Manual TTN entry",
     "network.unexpected": "Unexpected network error.",
     "pagination.next": "Next",
     "pagination.pageOf": "Page {page} of {totalPages}",
@@ -81,17 +91,25 @@ const messages: Record<Locale, Record<string, string>> = {
     "scanner.unableToStart": "Unable to start barcode scanner on this device.",
     "status.absent": "Absent",
     "status.delivered": "Delivered",
+    "status.in_storage": "In storage",
     "status.new": "New",
+    "status.received": "Received",
     "status.rejected": "Rejected",
     "status.returned": "Returned",
+    "statusDialog.descriptionDuplicate":
+      "Shipment {ttn} was already scanned. Review its current status and update it if needed.",
     "statusDialog.descriptionExisting":
       "Parcel {ttn} was already scanned. Choose the latest delivery result.",
     "statusDialog.descriptionGeneric":
       "Choose the latest status for this parcel.",
+    "statusDialog.duplicateHint":
+      "This TTN already exists in the system. Saving here will update the existing shipment instead of creating a duplicate.",
     "statusDialog.save": "Save status",
     "statusDialog.saving": "Saving...",
     "statusDialog.select": "Select status",
     "statusDialog.status": "Status",
+    "statusDialog.titleDuplicate": "Shipment already scanned",
+    "statusDialog.ttn": "TTN",
     "statusDialog.title": "Update parcel status",
     "table.action": "Action",
     "table.date": "Date",
@@ -105,7 +123,9 @@ const messages: Record<Locale, Record<string, string>> = {
     "validation.branch.required": "Branch number is required.",
     "validation.parcelId.integer": "Parcel id must be a whole number.",
     "validation.parcelId.positive": "Parcel id must be positive.",
+    "validation.ttn.invalid": "TTN format is invalid.",
     "validation.ttn.long": "TTN is too long.",
+    "validation.ttn.required": "TTN is required.",
     "validation.ttn.short": "TTN is too short.",
     "api.database.invalid":
       "DATABASE_URL is invalid. Add a valid Neon connection string to .env.local.",
@@ -137,6 +157,10 @@ const messages: Record<Locale, Record<string, string>> = {
     "dashboard.viewDescription":
       "Шукайте за ТТН, фільтруйте за статусом, сортуйте за датою та оновлюйте результат в одному списку.",
     "dashboard.viewParcels": "Переглянути посилки",
+    "aging.bannerBody":
+      "Ця посилка зберігається більше 7 днів. Будь ласка, оновіть її статус або видайте її.",
+    "aging.bannerTitle": "Посилки, що потребують уваги: {count}",
+    "aging.highlight": "Зберігається понад 7 днів",
     "filters.allStatuses": "Усі статуси",
     "filters.newestFirst": "Спочатку новіші",
     "filters.oldestFirst": "Спочатку старіші",
@@ -161,6 +185,12 @@ const messages: Record<Locale, Record<string, string>> = {
     "lang.english": "English",
     "lang.switcherLabel": "Мова",
     "lang.ukrainian": "Українська",
+    "manualEntry.description":
+      "Якщо сканер не може зчитати штрихкод, введіть ТТН вручну й обробіть її так само.",
+    "manualEntry.placeholder": "Введіть ТТН вручну",
+    "manualEntry.processing": "Обробляємо ТТН...",
+    "manualEntry.submit": "Підтвердити ТТН",
+    "manualEntry.title": "Ручне введення ТТН",
     "network.unexpected": "Неочікувана мережева помилка.",
     "pagination.next": "Далі",
     "pagination.pageOf": "Сторінка {page} з {totalPages}",
@@ -192,17 +222,25 @@ const messages: Record<Locale, Record<string, string>> = {
       "Не вдалося запустити сканер штрихкодів на цьому пристрої.",
     "status.absent": "Відсутня",
     "status.delivered": "Доставлено",
+    "status.in_storage": "На зберіганні",
     "status.new": "Нова",
+    "status.received": "Отримано",
     "status.rejected": "Відхилено",
     "status.returned": "Повернено",
+    "statusDialog.descriptionDuplicate":
+      "Посилку {ttn} уже відскановано. Перевірте її поточний статус і оновіть за потреби.",
     "statusDialog.descriptionExisting":
       "Посилку {ttn} вже було відскановано. Оберіть актуальний результат доставки.",
     "statusDialog.descriptionGeneric":
       "Оберіть актуальний статус для цієї посилки.",
+    "statusDialog.duplicateHint":
+      "Ця ТТН уже існує в системі. Збереження тут оновить наявну посилку, а не створить дублікат.",
     "statusDialog.save": "Зберегти статус",
     "statusDialog.saving": "Зберігаємо...",
     "statusDialog.select": "Оберіть статус",
     "statusDialog.status": "Статус",
+    "statusDialog.titleDuplicate": "Посилку вже відскановано",
+    "statusDialog.ttn": "ТТН",
     "statusDialog.title": "Оновити статус посилки",
     "table.action": "Дія",
     "table.date": "Дата",
@@ -216,7 +254,9 @@ const messages: Record<Locale, Record<string, string>> = {
     "validation.branch.required": "Номер відділення є обов'язковим.",
     "validation.parcelId.integer": "Ідентифікатор посилки має бути цілим числом.",
     "validation.parcelId.positive": "Ідентифікатор посилки має бути додатним.",
+    "validation.ttn.invalid": "Формат ТТН некоректний.",
     "validation.ttn.long": "ТТН занадто довга.",
+    "validation.ttn.required": "ТТН є обов'язковою.",
     "validation.ttn.short": "ТТН занадто коротка.",
     "api.database.invalid":
       "DATABASE_URL має неправильний формат. Додайте коректний рядок підключення Neon у .env.local.",

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { parcelStatusEnum } from "./schema";
 
 const parcelStatusValues = parcelStatusEnum.enumValues;
+const ttnFormatRegex = /^[A-Z0-9-]+$/;
 
 export const branchSelectionSchema = z.object({
   branchNumber: z
@@ -17,8 +18,10 @@ export const createParcelSchema = z.object({
   ttn: z
     .string()
     .trim()
+    .min(1, "validation.ttn.required")
     .min(4, "validation.ttn.short")
     .max(128, "validation.ttn.long")
+    .regex(ttnFormatRegex, "validation.ttn.invalid")
     .transform((value) => value.toUpperCase()),
 });
 

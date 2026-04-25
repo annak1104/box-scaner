@@ -9,6 +9,8 @@ import {
 
 export const parcelStatusEnum = pgEnum("parcel_status", [
   "new",
+  "received",
+  "in_storage",
   "delivered",
   "returned",
   "rejected",

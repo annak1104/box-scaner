@@ -2,6 +2,7 @@
 
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useI18n } from "@/components/i18n-provider";
+import { parcelStatusOptions } from "@/lib/parcels";
 import type { ParcelStatusFilter, ParcelSortOrder } from "@/lib/types";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -64,11 +65,11 @@ export function ParcelFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
-              <SelectItem value="new">{t("status.new")}</SelectItem>
-              <SelectItem value="delivered">{t("status.delivered")}</SelectItem>
-              <SelectItem value="returned">{t("status.returned")}</SelectItem>
-              <SelectItem value="rejected">{t("status.rejected")}</SelectItem>
-              <SelectItem value="absent">{t("status.absent")}</SelectItem>
+              {parcelStatusOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {t(`status.${option}`)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 

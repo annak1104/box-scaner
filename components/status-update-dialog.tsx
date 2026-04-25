@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { useI18n } from "@/components/i18n-provider";
+import { parcelStatusOptions } from "@/lib/parcels";
 import type { Parcel, ParcelStatus } from "@/lib/types";
+import { ParcelStatusBadge } from "./parcel-status-badge";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -23,6 +25,7 @@ import {
 type StatusUpdateDialogProps = {
   open: boolean;
   parcel: Parcel | null;
+  mode?: "default" | "duplicate";
   onOpenChange: (open: boolean) => void;
   onUpdated: (parcel: Parcel) => void;
 };
@@ -30,6 +33,7 @@ type StatusUpdateDialogProps = {
 export function StatusUpdateDialog({
   open,
   parcel,
+  mode = "default",
   onOpenChange,
   onUpdated,
 }: StatusUpdateDialogProps) {
@@ -86,15 +90,41 @@ export function StatusUpdateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("statusDialog.title")}</DialogTitle>
+          <DialogTitle>
+            {mode === "duplicate"
+              ? t("statusDialog.titleDuplicate")
+              : t("statusDialog.title")}
+          </DialogTitle>
           <DialogDescription>
-            {parcel
+            {mode === "duplicate" && parcel
+              ? t("statusDialog.descriptionDuplicate", { ttn: parcel.ttn })
+              : parcel
               ? t("statusDialog.descriptionExisting", { ttn: parcel.ttn })
               : t("statusDialog.descriptionGeneric")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          {parcel ? (
+            <div className="rounded-2xl border border-border/80 bg-muted/40 px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {t("statusDialog.ttn")}
+                  </p>
+                  <p className="text-sm font-semibold">{parcel.ttn}</p>
+                </div>
+                <ParcelStatusBadge status={parcel.status} />
+              </div>
+              {mode === "duplicate" ? (
+                <div className="mt-3 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>{t("statusDialog.duplicateHint")}</p>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="space-y-2">
             <p className="text-sm font-medium">{t("statusDialog.status")}</p>
             <Select value={status} onValueChange={(value) => setStatus(value as ParcelStatus)}>
@@ -102,7 +132,7 @@ export function StatusUpdateDialog({
                 <SelectValue placeholder={t("statusDialog.select")} />
               </SelectTrigger>
               <SelectContent>
-                {(["delivered", "returned", "rejected", "absent", "new"] as ParcelStatus[]).map((option) => (
+                {parcelStatusOptions.map((option) => (
                   <SelectItem key={option} value={option}>
                     {t(`status.${option}`)}
                   </SelectItem>
