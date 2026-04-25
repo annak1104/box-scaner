@@ -3,14 +3,26 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, ScanLine } from "lucide-react";
+import { type FormEvent, useState } from "react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Loader2,
+  ScanLine,
+} from "lucide-react";
 import { BranchGuard } from "@/components/branch-guard";
 import { useI18n } from "@/components/i18n-provider";
 import { ScannerLoadingState } from "@/components/scanner-loading-state";
 import { StatusUpdateDialog } from "@/components/status-update-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { playScanTone, vibrateDevice } from "@/lib/client-feedback";
+import {
+  getTtnValidationErrorKey,
+  normalizeTtn,
+} from "@/lib/parcels";
 import { useBranchStore } from "@/lib/stores/branch-store";
 import type { Parcel } from "@/lib/types";
 
@@ -30,7 +42,9 @@ export default function ScanPage() {
   const branchNumber = useBranchStore((state) => state.branchNumber);
   const [scannerKey, setScannerKey] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [manualTtn, setManualTtn] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"loading" | "success" | "warning">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [existingParcel, setExistingParcel] = useState<Parcel | null>(null);
 
@@ -38,12 +52,16 @@ export default function ScanPage() {
     setScannerKey((current) => current + 1);
     setErrorMessage(null);
     setStatusMessage(null);
+    setStatusTone("loading");
   };
 
-  const handleDetected = async (ttn: string) => {
+  const processTtn = async (rawTtn: string) => {
+    const ttn = normalizeTtn(rawTtn);
+
     setIsProcessing(true);
     setErrorMessage(null);
     setStatusMessage(t("scan.barcodeDetected", { ttn }));
+    setStatusTone("loading");
 
     try {
       const response = await fetch("/api/parcels", {
@@ -60,9 +78,11 @@ export default function ScanPage() {
       if (response.status === 201 && payload.parcel) {
         vibrateDevice([120, 40, 120]);
         playScanTone();
+        setStatusTone("success");
         setStatusMessage(
           t("scan.parcelSaved", { ttn: payload.parcel.ttn }),
         );
+        setManualTtn("");
         window.setTimeout(() => {
           router.replace("/parcels");
         }, 900);
@@ -72,6 +92,7 @@ export default function ScanPage() {
       if (response.status === 409 && payload.parcel) {
         vibrateDevice([80, 30, 80]);
         setExistingParcel(payload.parcel);
+        setStatusTone("warning");
         setStatusMessage(
           t("scan.parcelExists", { ttn: payload.parcel.ttn }),
         );
@@ -87,6 +108,23 @@ export default function ScanPage() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleDetected = async (ttn: string) => {
+    await processTtn(ttn);
+  };
+
+  const handleManualSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const validationErrorKey = getTtnValidationErrorKey(manualTtn);
+
+    if (validationErrorKey) {
+      setErrorMessage(t(validationErrorKey));
+      return;
+    }
+
+    await processTtn(manualTtn);
   };
 
   return (
@@ -125,10 +163,58 @@ export default function ScanPage() {
           onScannerError={(message) => setErrorMessage(message)}
         />
 
+        <section className="panel space-y-4 px-4 py-4">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold">{t("manualEntry.title")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("manualEntry.description")}
+            </p>
+          </div>
+
+          <form className="space-y-3" onSubmit={handleManualSubmit}>
+            <Input
+              value={manualTtn}
+              onChange={(event) => {
+                setManualTtn(event.target.value);
+                if (errorMessage) {
+                  setErrorMessage(null);
+                }
+              }}
+              placeholder={t("manualEntry.placeholder")}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              className="h-12"
+            />
+            <Button
+              type="submit"
+              className="h-12 w-full"
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("manualEntry.processing")}
+                </>
+              ) : (
+                t("manualEntry.submit")
+              )}
+            </Button>
+          </form>
+        </section>
+
         {statusMessage ? (
-          <div className="panel flex items-start gap-3 px-4 py-4">
-            {isProcessing ? (
+          <div
+            className={`panel flex items-start gap-3 px-4 py-4 ${
+              statusTone === "warning"
+                ? "border-amber-200 bg-amber-50"
+                : ""
+            }`}
+          >
+            {statusTone === "loading" ? (
               <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-primary" />
+            ) : statusTone === "warning" ? (
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
             ) : (
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
             )}
@@ -152,6 +238,7 @@ export default function ScanPage() {
         <StatusUpdateDialog
           open={Boolean(existingParcel)}
           parcel={existingParcel}
+          mode="duplicate"
           onOpenChange={(open) => {
             if (!open) {
               setExistingParcel(null);

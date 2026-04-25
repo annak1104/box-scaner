@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowLeft, PackageOpen, RefreshCcw } from "lucide-react";
+import { AlertTriangle, ArrowLeft, PackageOpen, RefreshCcw } from "lucide-react";
 import { BranchGuard } from "@/components/branch-guard";
 import { useI18n } from "@/components/i18n-provider";
 import { ParcelFilters } from "@/components/parcel-filters";
@@ -10,6 +10,7 @@ import { ParcelsTable } from "@/components/parcels-table";
 import { StatusUpdateDialog } from "@/components/status-update-dialog";
 import { Button } from "@/components/ui/button";
 import { useParcels } from "@/hooks/use-parcels";
+import { isParcelOverdue } from "@/lib/parcels";
 import { useBranchStore } from "@/lib/stores/branch-store";
 import type { Parcel, ParcelStatusFilter, ParcelSortOrder } from "@/lib/types";
 
@@ -41,6 +42,7 @@ export default function ParcelsPage() {
     locale,
   });
   const totalPages = Math.max(1, Math.ceil(data.total / PAGE_SIZE));
+  const overdueParcels = data.items.filter((parcel) => isParcelOverdue(parcel));
 
   return (
     <BranchGuard>
@@ -97,6 +99,18 @@ export default function ParcelsPage() {
             setPage(1);
           }}
         />
+
+        {overdueParcels.length > 0 ? (
+          <section className="panel flex items-start gap-3 border-amber-200 bg-amber-50 px-4 py-4 text-amber-950">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+            <div className="space-y-1 text-sm leading-6">
+              <p className="font-semibold">
+                {t("aging.bannerTitle", { count: overdueParcels.length })}
+              </p>
+              <p>{t("aging.bannerBody")}</p>
+            </div>
+          </section>
+        ) : null}
 
         <ParcelsTable
           error={error}

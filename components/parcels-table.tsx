@@ -2,6 +2,8 @@
 
 import { AlertCircle } from "lucide-react";
 import { useI18n } from "@/components/i18n-provider";
+import { isParcelOverdue } from "@/lib/parcels";
+import { cn } from "@/lib/utils";
 import type { Parcel } from "@/lib/types";
 import { Button } from "./ui/button";
 import {
@@ -66,8 +68,22 @@ export function ParcelsTable({
 
           {!isLoading
             ? parcels.map((parcel) => (
-                <TableRow key={parcel.id}>
-                  <TableCell className="font-medium">{parcel.ttn}</TableCell>
+                <TableRow
+                  key={parcel.id}
+                  className={cn(
+                    isParcelOverdue(parcel) && "bg-amber-50/80",
+                  )}
+                >
+                  <TableCell className="font-medium">
+                    <div className="space-y-1">
+                      <p>{parcel.ttn}</p>
+                      {isParcelOverdue(parcel) ? (
+                        <p className="text-xs font-medium text-amber-700">
+                          {t("aging.highlight")}
+                        </p>
+                      ) : null}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <ParcelStatusBadge status={parcel.status} />
                   </TableCell>
