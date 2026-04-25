@@ -176,7 +176,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "form.enterBranch": "Введіть номер відділення",
     "form.openingDashboard": "Відкриваємо панель...",
     "home.description":
-      "Введіть номер відділення, щоб відкрити сканування, історію посилок і оновлення статусів для польових працівників на мобільних пристроях.",
+      "Введіть номер відділення, щоб відкрити сканування, історію і оновлення статусів посилок на мобільних пристроях.",
     "home.openDashboard": "Відкрити панель",
     "home.returningWorker": "Повернулися до роботи?",
     "home.returningWorkerDescription":
