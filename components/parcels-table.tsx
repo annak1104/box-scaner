@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Trash2 } from "lucide-react";
 import { useI18n } from "@/components/i18n-provider";
 import { isParcelOverdue } from "@/lib/parcels";
 import { cn } from "@/lib/utils";
@@ -20,12 +20,16 @@ type ParcelsTableProps = {
   parcels: Parcel[];
   isLoading: boolean;
   error: string | null;
+  deletingParcelId: number | null;
+  onDelete: (parcel: Parcel) => void;
   onUpdateStatus: (parcel: Parcel) => void;
 };
 
 export function ParcelsTable({
+  deletingParcelId,
   error,
   isLoading,
+  onDelete,
   parcels,
   onUpdateStatus,
 }: ParcelsTableProps) {
@@ -97,13 +101,29 @@ export function ParcelsTable({
                     }).format(new Date(parcel.createdAt))}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onUpdateStatus(parcel)}
-                    >
-                      {t("table.updateStatus")}
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onUpdateStatus(parcel)}
+                      >
+                        {t("table.updateStatus")}
+                      </Button>
+                      <Button
+                        aria-label={t("table.deleteParcel")}
+                        disabled={deletingParcelId === parcel.id}
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => onDelete(parcel)}
+                      >
+                        <Trash2 className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">
+                          {deletingParcelId === parcel.id
+                            ? t("table.deleting")
+                            : t("table.deleteParcel")}
+                        </span>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

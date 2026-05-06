@@ -24,6 +24,7 @@ export default function ParcelsPage() {
   const [sort, setSort] = useState<ParcelSortOrder>("newest");
   const [page, setPage] = useState(1);
   const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
+  const [deletingParcelId, setDeletingParcelId] = useState<number | null>(null);
 
   const query = useMemo(
     () => ({
@@ -37,12 +38,54 @@ export default function ParcelsPage() {
     [branchNumber, page, search, sort, status],
   );
 
-  const { data, error, isLoading, refresh, replaceParcel } = useParcels({
-    ...query,
-    locale,
-  });
+  const { data, error, isLoading, refresh, removeParcel, replaceParcel } =
+    useParcels({
+      ...query,
+      locale,
+    });
   const totalPages = Math.max(1, Math.ceil(data.total / PAGE_SIZE));
   const overdueParcels = data.items.filter((parcel) => isParcelOverdue(parcel));
+
+  async function handleDeleteParcel(parcel: Parcel) {
+    const confirmed = window.confirm(
+      t("deleteDialog.confirm", { ttn: parcel.ttn }),
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingParcelId(parcel.id);
+
+    try {
+      const response = await fetch(`/api/parcels/${parcel.id}`, {
+        method: "DELETE",
+        headers: {
+          "x-locale": locale,
+        },
+      });
+
+      const payload = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.message || t("api.unableDeleteParcel"));
+      }
+
+      removeParcel(parcel.id);
+
+      if (data.items.length === 1 && page > 1) {
+        setPage((current) => Math.max(1, current - 1));
+      } else {
+        refresh();
+      }
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : t("network.unexpected"),
+      );
+    } finally {
+      setDeletingParcelId(null);
+    }
+  }
 
   return (
     <BranchGuard>
@@ -113,8 +156,10 @@ export default function ParcelsPage() {
         ) : null}
 
         <ParcelsTable
+          deletingParcelId={deletingParcelId}
           error={error}
           isLoading={isLoading}
+          onDelete={handleDeleteParcel}
           parcels={data.items}
           onUpdateStatus={setSelectedParcel}
         />

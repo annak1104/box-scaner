@@ -27,6 +27,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "dashboard.viewDescription":
       "Search by TTN, filter by status, sort by date, and update parcel results from one list.",
     "dashboard.viewParcels": "View Parcels",
+    "deleteDialog.confirm": "Delete parcel {ttn}? This cannot be undone.",
     "aging.bannerBody":
       "This shipment has been in storage for more than 7 days. Please update its status or deliver it.",
     "aging.bannerTitle": "Shipments needing attention: {count}",
@@ -113,6 +114,8 @@ const messages: Record<Locale, Record<string, string>> = {
     "statusDialog.title": "Update parcel status",
     "table.action": "Action",
     "table.date": "Date",
+    "table.deleteParcel": "Delete",
+    "table.deleting": "Deleting...",
     "table.empty": "No parcels found for this filter set.",
     "table.loading": "Loading parcels...",
     "table.status": "Status",
@@ -138,6 +141,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "api.parcelNotFound": "Parcel not found.",
     "api.duplicateTTN": "Duplicate TTN detected.",
     "api.unableLoadParcels": "Unable to load parcels.",
+    "api.unableDeleteParcel": "Unable to delete parcel.",
     "api.unableSaveParcel": "Unable to save parcel.",
     "api.unableUpdateParcel": "Unable to update parcel status.",
   },
@@ -157,6 +161,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "dashboard.viewDescription":
       "Шукайте за ТТН, фільтруйте за статусом, сортуйте за датою та оновлюйте результат в одному списку.",
     "dashboard.viewParcels": "Переглянути посилки",
+    "deleteDialog.confirm": "Видалити посилку {ttn}? Цю дію не можна скасувати.",
     "aging.bannerBody":
       "Ця посилка зберігається більше 7 днів. Будь ласка, оновіть її статус або видайте її.",
     "aging.bannerTitle": "Посилки, що потребують уваги: {count}",
@@ -171,7 +176,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "filters.title": "Фільтри",
     "form.branchHint":
       "Використовуйте лише цифри. Ми запам'ятаємо це відділення на цьому пристрої.",
-    "form.branchPlaceholder": "наприклад, 123",
+    "form.branchPlaceholder": "наприклад, 43461",
     "form.continue": "Продовжити",
     "form.enterBranch": "Введіть номер відділення",
     "form.openingDashboard": "Відкриваємо панель...",
@@ -244,6 +249,8 @@ const messages: Record<Locale, Record<string, string>> = {
     "statusDialog.title": "Оновити статус посилки",
     "table.action": "Дія",
     "table.date": "Дата",
+    "table.deleteParcel": "Видалити",
+    "table.deleting": "Видаляємо...",
     "table.empty": "Для цього набору фільтрів посилок не знайдено.",
     "table.loading": "Завантажуємо посилки...",
     "table.status": "Статус",
@@ -269,6 +276,7 @@ const messages: Record<Locale, Record<string, string>> = {
     "api.parcelNotFound": "Посилку не знайдено.",
     "api.duplicateTTN": "Таку ТТН уже зареєстровано.",
     "api.unableLoadParcels": "Не вдалося завантажити посилки.",
+    "api.unableDeleteParcel": "Не вдалося видалити посилку.",
     "api.unableSaveParcel": "Не вдалося зберегти посилку.",
     "api.unableUpdateParcel": "Не вдалося оновити статус посилки.",
   },

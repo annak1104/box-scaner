@@ -112,5 +112,12 @@ export function useParcels({
         ),
       }));
     },
+    removeParcel: (parcelId: number) => {
+      setData((current) => ({
+        ...current,
+        items: current.items.filter((parcel) => parcel.id !== parcelId),
+        total: Math.max(0, current.total - 1),
+      }));
+    },
   };
 }

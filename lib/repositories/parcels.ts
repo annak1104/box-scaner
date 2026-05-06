@@ -113,3 +113,13 @@ export async function updateParcelStatus(id: number, status: ParcelStatus) {
 
   return parcel ?? null;
 }
+
+export async function deleteParcel(id: number) {
+  assertDatabaseConfigured();
+  const [parcel] = await db
+    .delete(parcels)
+    .where(eq(parcels.id, id))
+    .returning();
+
+  return parcel ?? null;
+}
